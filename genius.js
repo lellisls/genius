@@ -78,13 +78,22 @@ function regionClicked(clickedRegion) {
     return;
   }
   console.log(`Region ${clickedRegion} was clicked!`);
+  state = Number(clickedRegion);
+  redraw();
+}
 
+function regionReleased(clickedRegion) {
+  if (iterator != getMaxIterations()) {
+    return;
+  }
+  state = -1;
+  redraw();
 }
 
 window.onload = () => {
   canvas = document.getElementById("canvas");
-  canvas.onclick = evt => regionClicked(evt.region);
-
+  canvas.addEventListener("mousedown", evt => regionClicked(evt.region), false);
+  canvas.addEventListener("mouseup", evt => regionReleased(evt.region), false);
   updateSize();
   redraw();
 
