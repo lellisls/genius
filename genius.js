@@ -24,7 +24,7 @@ function updateSize() {
   radius = (Math.min(canvas.width, canvas.height) / 2) * 0.7;
 }
 
-function redraw() {
+function drawGameBoard() {
   const context = canvas.getContext("2d");
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -61,6 +61,7 @@ function redraw() {
     }
   }
   drawRestartButton("Restart!", "restart2");
+  drawUpperCornerText(`Level: ${level}`);
 }
 
 function drawRestartButton(text, id) {
@@ -85,11 +86,24 @@ function drawRestartButton(text, id) {
   context.fillStyle = "#333";
   context.shadowBlur = 0;
   context.font = "20px Verdana";
+  context.textBaseline = "middle";
+  context.textAlign = "center";
   context.fillText(
     text,
     canvas.width - rectWidth / 2 - 10,
     canvas.height - rectHeight / 2 - 10
   );
+}
+
+function drawUpperCornerText(text) {
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#333";
+  context.shadowBlur = 0;
+  context.font = "28px Verdana";
+  context.textBaseline = "middle";
+  context.textAlign = "left";
+  context.fillText(text, 20, 30);
 }
 
 function drawBigText(text) {
@@ -121,7 +135,7 @@ function beep(vol, freq, duration) {
 
 window.onresize = () => {
   updateSize();
-  redraw();
+  drawGameBoard();
 };
 
 const getMaxIterations = () => 2 * (level + 2) + 1;
@@ -133,7 +147,7 @@ function iterate() {
 
   state = iterator % 2 ? Math.round(Math.random() * 10000) % 4 : -1;
 
-  redraw();
+  drawGameBoard();
   if (state >= 0) {
     beep(20, frequencies[state], 100);
     gameContext.push(state);
@@ -172,7 +186,7 @@ function buttonClicked(clickedRegion) {
   }
 
   state = Number(clickedRegion);
-  redraw();
+  drawGameBoard();
   beep(20, frequencies[state], 100);
 
   if (gameContext[answerIterator] !== state) {
@@ -228,7 +242,7 @@ function regionReleased(clickedRegion) {
       return;
     }
     state = -1;
-    redraw();
+    drawGameBoard();
   }
 }
 
