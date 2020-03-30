@@ -52,6 +52,7 @@ function redraw() {
       context.lineTo(centerX, centerY);
       context.closePath();
       context.fill();
+      context.addHitRegion({ id: i });
     }
   }
 }
@@ -61,17 +62,28 @@ window.onresize = () => {
   redraw();
 };
 
+const getMaxIterations = () => 2 * maxIterations + 1;
+
 function iterate() {
   state = iterator % 2 ? Math.round(Math.random() * 10000) % 4 : -1;
   redraw();
   iterator++;
-  if (iterator != 2 * maxIterations + 1) {
-    setTimeout(() => iterate(), 1000);
+  if (iterator != getMaxIterations()) {
+    setTimeout(() => iterate(), 100);
   }
+}
+
+function regionClicked(clickedRegion) {
+  if (clickedRegion === null || iterator != getMaxIterations()) {
+    return;
+  }
+  console.log(`Region ${clickedRegion} was clicked!`);
+
 }
 
 window.onload = () => {
   canvas = document.getElementById("canvas");
+  canvas.onclick = evt => regionClicked(evt.region);
 
   updateSize();
   redraw();
