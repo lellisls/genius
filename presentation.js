@@ -9,7 +9,8 @@ export default function createPresentation(canvas) {
       centerX: 0.0,
       centerY: 0.0,
       radius: 1.0
-    }
+    },
+    currentScreenData: null
   };
 
   function recalculateSize(width, height) {
@@ -18,23 +19,7 @@ export default function createPresentation(canvas) {
     state.boardDimensions.centerX = width / 2;
     state.boardDimensions.centerY = height / 2;
     state.boardDimensions.radius = (Math.min(width, height) / 2) * 0.7;
-  }
-
-  function eventHandler(command) {
-    const sizeUpdated = function({ width, height }) {
-      recalculateSize(width, height);
-    }.bind(this);
-
-    const acceptedCommands = {
-      sizeUpdated
-    };
-
-    const commandFunction = acceptedCommands[command.type];
-
-    if (commandFunction) {
-      console.log(`Presentation: ${command.type}`);
-      commandFunction(command);
-    }
+    render(state.currentScreenData);
   }
 
   function clearScreen() {
@@ -76,11 +61,11 @@ export default function createPresentation(canvas) {
         context.addHitRegion({ id: i });
       }
     }
-    drawRestartButton("Restart!", "restart2");
+    drawButton("Restart!", "restart2");
     drawUpperCornerText(`Level: ${level}`);
   }
 
-  function drawRestartButton(text, id) {
+  function drawButton(text, id) {
     const context = canvas.getContext("2d");
 
     context.fillStyle = "#DDDDEE";
@@ -123,9 +108,6 @@ export default function createPresentation(canvas) {
   }
 
   function drawBigText(text) {
-    console.log(text);
-    playing = false;
-
     const context = canvas.getContext("2d");
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -135,6 +117,43 @@ export default function createPresentation(canvas) {
     context.textBaseline = "middle";
     context.textAlign = "center";
     context.fillText(text, canvas.width / 2, canvas.height / 2);
+  }
+
+  function render(screenData) {
+    if(!screenData){
+      return;
+    }
+
+    const screenRenders = {
+      bigTextScreen: () => {
+        drawBigText(screenData.text);
+        drawButton(screenData.buttonText, screenData.buttonAction);
+      }
+    };
+
+    const renderFunction = screenRenders[screenData.screen];
+
+    if (renderFunction) {
+      console.log(`Render screen: ${screenData.screen}`);
+      state.currentScreenData = screenData;
+      renderFunction(screenData);
+    }
+  }
+
+  function eventHandler(command) {
+    const acceptedCommands = {
+      sizeUpdated: ({ width, height }) => {
+        recalculateSize(width, height);
+      },
+      render
+    };
+
+    const commandFunction = acceptedCommands[command.type];
+
+    if (commandFunction) {
+      console.log(`Presentation: ${command.type}`);
+      commandFunction(command.data);
+    }
   }
 
   return {

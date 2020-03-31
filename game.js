@@ -1,30 +1,42 @@
 export default function createGame() {
   let startScreenCommand = {
-    type: "renderBigTextScreen",
-    text: "GENIUS",
-    buttonText: "Start!",
-    buttonAction: "startGame"
+    type: "render",
+    data: {
+      screen: "bigTextScreen",
+      text: "GENIUS",
+      buttonText: "Start!",
+      buttonAction: "startGame"
+    }
   };
 
   let lostGameScreenCommand = {
-    type: "renderBigTextScreen",
-    text: "You lost",
-    buttonText: "Start!",
-    buttonAction: "startGame"
+    type: "render",
+    data: {
+      screen: "bigTextScreen",
+      text: "You lost",
+      buttonText: "Start!",
+      buttonAction: "startGame"
+    }
   };
 
   let wonGameScreenCommand = {
-    type: "renderBigTextScreen",
-    text: "You won",
-    buttonText: "Next!",
-    buttonAction: "nextLevel"
+    type: "render",
+    data: {
+      screen: "bigTextScreen",
+      text: "You won",
+      buttonText: "Next!",
+      buttonAction: "nextLevel"
+    }
   };
 
   let boardScreenCommand = {
-    type: "renderBigTextScreen",
-    text: "You lost",
-    buttonText: "Start!",
-    buttonAction: "startGame"
+    type: "render",
+    data: {
+      screen: "bigTextScreen",
+      text: "You lost",
+      buttonText: "Restart!",
+      buttonAction: "startGame"
+    }
   };
 
   let state = {
@@ -53,6 +65,7 @@ export default function createGame() {
 
   function initialize() {
     notifyAll(startScreenCommand);
+    state.playing = false;
   }
 
   function getMaxIterations() {
@@ -165,8 +178,12 @@ export default function createGame() {
     }
   }
 
+  function eventHandler(command) {}
+
   return {
+    initialize,
     subscribe,
-    unsubscribeAll
+    unsubscribeAll,
+    eventHandler
   };
 }

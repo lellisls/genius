@@ -27,9 +27,12 @@
         const presentation = createPresentation(canvas);
 
         eventListener.subscribe(presentation.eventHandler);
+        eventListener.subscribe(game.eventHandler)
         game.subscribe(presentation.eventHandler);
+        game.subscribe(audio.eventHandler);
 
         presentation.recalculateSize(document.body.clientWidth, document.body.clientHeight)
+        game.initialize()
     }
 </script>
 

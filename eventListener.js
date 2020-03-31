@@ -25,7 +25,7 @@ export default function createEventListener(canvas) {
 
     const command = {
       type: "regionClicked",
-      region
+      data: { region }
     };
 
     notifyAll(command);
@@ -34,7 +34,7 @@ export default function createEventListener(canvas) {
   function regionReleased(region) {
     const command = {
       type: "regionReleased",
-      region
+      data: { region }
     };
 
     notifyAll(command);
@@ -43,24 +43,18 @@ export default function createEventListener(canvas) {
   function sizeUpdated() {
     const command = {
       type: "sizeUpdated",
-      width: document.body.clientWidth,
-      height: document.body.clientHeight
+      data: {
+        width: document.body.clientWidth,
+        height: document.body.clientHeight
+      }
     };
 
     notifyAll(command);
   }
 
-  canvas.addEventListener(
-    "mousedown",
-    evt => regionClicked(evt.region),
-    false
-  );
+  canvas.addEventListener("mousedown", evt => regionClicked(evt.region), false);
 
-  canvas.addEventListener(
-    "mouseup",
-    evt => regionReleased(evt.region),
-    false
-  );
+  canvas.addEventListener("mouseup", evt => regionReleased(evt.region), false);
 
   window.onresize = evt => sizeUpdated();
 
