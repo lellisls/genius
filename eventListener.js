@@ -1,7 +1,10 @@
 export default function createEventListener(canvas) {
   let state = {
-    observers: []
+    observers: [],
+    buttons: new Map()
   };
+
+  const context = canvas.getContext("2d");
 
   function subscribe(observerFunction) {
     state.observers.push(observerFunction);
@@ -18,23 +21,23 @@ export default function createEventListener(canvas) {
     }
   }
 
-  function regionClicked(region) {
-    if (region === null) {
-      return;
+  function regionClicked(clickX, clickY) {
+    for (let [region, button] of state.buttons.entries()) {
+      if (context.isPointInPath(button, clickX, clickY)) {
+        const command = {
+          type: "regionClicked",
+          data: { region }
+        };
+        notifyAll(command);
+        break;
+      }
     }
-
-    const command = {
-      type: "regionClicked",
-      data: { region }
-    };
-
-    notifyAll(command);
   }
 
-  function regionReleased(region) {
+  function regionReleased() {
     const command = {
       type: "regionReleased",
-      data: { region }
+      data: {}
     };
 
     notifyAll(command);
@@ -52,14 +55,34 @@ export default function createEventListener(canvas) {
     notifyAll(command);
   }
 
-  canvas.addEventListener("mousedown", evt => regionClicked(evt.region), false);
+  function eventHandler(command) {
+    const acceptedCommands = {
+      buttonsUpdated: ({ buttons }) => {
+        state.buttons = buttons;
+      }
+    };
 
-  canvas.addEventListener("mouseup", evt => regionReleased(evt.region), false);
+    const commandFunction = acceptedCommands[command.type];
+
+    if (commandFunction) {
+      console.log(`EventListener received: ${command.type}`);
+      commandFunction(command.data);
+    }
+  }
+
+  canvas.addEventListener(
+    "mousedown",
+    evt => regionClicked(evt.clientX, evt.clientY),
+    false
+  );
+
+  canvas.addEventListener("mouseup", evt => regionReleased(), false);
 
   window.onresize = evt => sizeUpdated();
 
   return {
     subscribe,
-    unsubscribeAll
+    unsubscribeAll,
+    eventHandler
   };
 }

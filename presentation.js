@@ -10,8 +10,29 @@ export default function createPresentation(canvas) {
       centerY: 0.0,
       radius: 1.0
     },
-    currentScreenData: null
+    currentScreenData: null,
+    buttons: new Map(),
+    observers: []
   };
+
+  function subscribe(observerFunction) {
+    state.observers.push(observerFunction);
+  }
+
+  function unsubscribeAll() {
+    state.observers = [];
+  }
+
+  function notifyAll(command) {
+    console.log("Presentation: ", command);
+    for (const observerFunction of state.observers) {
+      observerFunction(command);
+    }
+  }
+
+  function addButton(id, button) {
+    state.buttons.set(id, button);
+  }
 
   function recalculateSize(width, height) {
     canvas.height = height;
@@ -24,6 +45,7 @@ export default function createPresentation(canvas) {
 
   function clearScreen() {
     context.clearRect(0, 0, canvas.width, canvas.height);
+    state.buttons.clear();
   }
 
   function drawGameBoard(boardState) {
@@ -47,7 +69,8 @@ export default function createPresentation(canvas) {
         context.shadowColor = colors_on[i];
 
         context.lineWidth = 5;
-        context.arc(
+        const zone = new Path2D();
+        zone.arc(
           centerX,
           centerY,
           radius,
@@ -55,32 +78,30 @@ export default function createPresentation(canvas) {
           0.5 * Math.PI * (i + 1),
           false
         );
-        context.lineTo(centerX, centerY);
-        context.closePath();
-        context.fill();
-        context.addHitRegion({ id: `zone${i}` });
+        zone.lineTo(centerX, centerY);
+        zone.closePath();
+        context.fill(zone);
+        addButton(`zone${i}`, zone);
       }
     }
   }
 
   function drawButton(text, id) {
-    const context = canvas.getContext("2d");
-
     context.fillStyle = "#DDDDEE";
     context.shadowBlur = 10;
     context.shadowColor = "black";
 
-    let rectWidth = 100;
-    let rectHeight = 40;
-    context.beginPath();
-    context.rect(
+    const rectWidth = 100;
+    const rectHeight = 40;
+    const button = new Path2D();
+    button.rect(
       canvas.width - rectWidth - 10,
       canvas.height - rectHeight - 10,
       rectWidth,
       rectHeight
     );
-    context.fill();
-    context.addHitRegion({ id });
+    context.fill(button);
+    addButton(id, button);
 
     context.fillStyle = "#333";
     context.shadowBlur = 0;
@@ -95,8 +116,6 @@ export default function createPresentation(canvas) {
   }
 
   function drawUpperCornerText(text) {
-    const context = canvas.getContext("2d");
-
     context.fillStyle = "#333";
     context.shadowBlur = 0;
     context.font = "28px Verdana";
@@ -106,8 +125,7 @@ export default function createPresentation(canvas) {
   }
 
   function drawBigText(text) {
-    const context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
+    clearScreen();
 
     context.fillStyle = "#333";
     context.shadowBlur = 0;
@@ -156,11 +174,19 @@ export default function createPresentation(canvas) {
     if (commandFunction) {
       console.log(`Presentation received: ${command.type}`);
       commandFunction(command.data);
+      notifyAll({
+        type: "buttonsUpdated",
+        data: {
+          buttons: state.buttons
+        }
+      });
     }
   }
 
   return {
     eventHandler,
-    recalculateSize
+    recalculateSize,
+    subscribe,
+    unsubscribeAll
   };
 }

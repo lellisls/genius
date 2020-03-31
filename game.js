@@ -41,7 +41,7 @@ export default function createGame() {
       data: {
         screen: "boardScreen",
         buttonText: "Restart!",
-        buttonAction: "startGame",
+        buttonAction: "startScreen",
         boardState: state.boardState,
         level: state.level
       }
@@ -166,7 +166,8 @@ export default function createGame() {
     }
   }
 
-  function startPage() {
+  function startScreen() {
+    state.playing = false;
     notifyAll(startScreenCommand());
   }
 
@@ -177,7 +178,7 @@ export default function createGame() {
 
     const acceptedRegions = {
       startGame,
-      startPage,
+      startScreen,
       nextLevel,
       zone0: () => zoneClicked(0),
       zone1: () => zoneClicked(1),
@@ -193,7 +194,7 @@ export default function createGame() {
     }
   }
 
-  function regionReleased({ region }) {
+  function regionReleased() {
     if (state.answerIterator < state.gameContext.length) {
       if (state.iterator != getMaxIterations()) {
         return;

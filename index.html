@@ -28,6 +28,8 @@
 
         eventListener.subscribe(presentation.eventHandler);
         eventListener.subscribe(game.eventHandler)
+        presentation.subscribe(eventListener.eventHandler);
+
         game.subscribe(presentation.eventHandler);
         game.subscribe(audio.eventHandler);
 
