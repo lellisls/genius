@@ -55,6 +55,15 @@ export default function createGame() {
     };
   }
 
+  function audioBeepCommand() {
+    return {
+      type: "audioBeep",
+      data: {
+        zone: state.boardState
+      }
+    };
+  }
+
   let state = {
     iterator: 0,
     level: 1,
@@ -98,7 +107,7 @@ export default function createGame() {
 
     notifyAll(boardScreenCommand());
     if (state.boardState >= 0) {
-      // audio.beep(20, frequencies[state.boardState], 100); // TODO
+      notifyAll(audioBeepCommand());
       state.gameContext.push(state.boardState);
     }
 
@@ -137,7 +146,7 @@ export default function createGame() {
 
     state.boardState = Number(clickedRegion);
     notifyAll(boardScreenCommand());
-    // audio.beep(20, frequencies[state.boardState], 100);
+    notifyAll(audioBeepCommand());
 
     if (state.gameContext[state.answerIterator] !== state.boardState) {
       notifyAll(lostGameScreenCommand());

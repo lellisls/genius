@@ -2,7 +2,7 @@ export default function createAudio() {
   const frequencies = [130.812775, 146.832367, 164.813782, 174.614105];
   let audioContext = null;
 
-  function setup() {
+  function audioSetup() {
     audioContext = new AudioContext();
   }
 
@@ -21,8 +21,23 @@ export default function createAudio() {
     v.stop(audioContext.currentTime + duration * 0.001);
   }
 
-  function eventHandler(observerFunction) {}
+  function audioBeep({ zone }) {
+    beep(20, frequencies[zone], 100);
+  }
 
+  function eventHandler(command) {
+    const acceptedCommands = {
+      audioSetup,
+      audioBeep
+    };
+
+    const commandFunction = acceptedCommands[command.type];
+
+    if (commandFunction) {
+      console.log(`Audio received: ${command.type}`);
+      commandFunction(command.data);
+    }
+  }
   return {
     eventHandler
   };
