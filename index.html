@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="./genius.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+
+<script type="module">
+    import createGame from "./game.js";
+    import createAudio from "./audio.js";
+    import createEventListener from "./eventListener.js";
+    import createPresentation from "./presentation.js";
+
+    window.onload = ( ) => {
+        let canvas = document.getElementById("canvas");
+
+        const eventListener = createEventListener(canvas);
+        const game = createGame();
+        const audio = createAudio();
+        const presentation = createPresentation(canvas);
+
+        eventListener.subscribe(presentation.eventHandler);
+        game.subscribe(presentation.eventHandler);
+
+        presentation.recalculateSize(document.body.clientWidth, document.body.clientHeight)
+    }
+</script>
+
+</html>
