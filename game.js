@@ -16,7 +16,7 @@ export default function createGame() {
       type: "render",
       data: {
         screen: "bigTextScreen",
-        text: "You lost",
+        text: `You lost at level ${state.level}`,
         buttonText: "Start!",
         buttonAction: "startGame"
       }
@@ -28,7 +28,7 @@ export default function createGame() {
       type: "render",
       data: {
         screen: "bigTextScreen",
-        text: "You won",
+        text: `You won at level ${state.level}`,
         buttonText: "Next!",
         buttonAction: "nextLevel"
       }
@@ -131,35 +131,34 @@ export default function createGame() {
   }
 
   function zoneClicked(clickedRegion) {
-    if (iterator != getMaxIterations()) {
+    if (state.iterator != getMaxIterations()) {
       return;
     }
 
-    state = Number(clickedRegion);
-    // presentation.drawGameBoard();
-    audio.beep(20, frequencies[state], 100);
+    state.boardState = Number(clickedRegion);
+    notifyAll(boardScreenCommand());
+    // audio.beep(20, frequencies[state.boardState], 100);
 
-    if (gameContext[answerIterator] !== state) {
-      drawBigText(`You lost at level ${level}!`);
-      drawRestartButton("Restart!", "restart");
-      console.log(`${gameContext[answerIterator]} !== ${state}`);
-      console.log(answerIterator);
-      console.log(gameContext);
-      answerIterator = gameContext.length;
+    if (state.gameContext[state.answerIterator] !== state.boardState) {
+      notifyAll(lostGameScreenCommand());
+      console.log(
+        `${state.gameContext[state.answerIterator]} !== ${state.boardState}`
+      );
+      console.log(state.answerIterator);
+      console.log(state.gameContext);
+      state.answerIterator = state.gameContext.length;
       return;
     }
 
-    answerIterator++;
-    if (answerIterator == gameContext.length) {
-      drawBigText(`You won level ${level}!`);
-      drawRestartButton("Next!", "next");
+    state.answerIterator++;
+    if (state.answerIterator == state.gameContext.length) {
+      notifyAll(wonGameScreenCommand());
       return;
     }
   }
 
   function startPage() {
-    drawBigText("GENIUS");
-    drawRestartButton("Start!", "restart");
+    notifyAll(startScreenCommand());
   }
 
   function regionClicked({ region }) {
@@ -191,7 +190,7 @@ export default function createGame() {
         return;
       }
       state.boardState = -1;
-      state.presentation.drawGameBoard();
+      notifyAll(boardScreenCommand());
     }
   }
 

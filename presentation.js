@@ -26,7 +26,7 @@ export default function createPresentation(canvas) {
     context.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  function drawGameBoard(boardState, level) {
+  function drawGameBoard(boardState) {
     const { centerX, centerY, radius } = state.boardDimensions;
     clearScreen();
     context.beginPath();
@@ -58,11 +58,9 @@ export default function createPresentation(canvas) {
         context.lineTo(centerX, centerY);
         context.closePath();
         context.fill();
-        context.addHitRegion({ id: i });
+        context.addHitRegion({ id: `zone${i}` });
       }
     }
-    drawButton("Restart!", "restart2");
-    drawUpperCornerText(`Level: ${level}`);
   }
 
   function drawButton(text, id) {
@@ -130,7 +128,9 @@ export default function createPresentation(canvas) {
         drawButton(screenData.buttonText, screenData.buttonAction);
       },
       boardScreen: () => {
-        drawGameBoard(screenData.boardState, screenData.level);
+        drawGameBoard(screenData.boardState);
+        drawButton(screenData.buttonText, screenData.buttonAction);
+        drawUpperCornerText(`Level: ${screenData.level}`);
       }
     };
 
