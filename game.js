@@ -1,43 +1,59 @@
 export default function createGame() {
-  let startScreenCommand = {
-    type: "render",
-    data: {
-      screen: "bigTextScreen",
-      text: "GENIUS",
-      buttonText: "Start!",
-      buttonAction: "startGame"
-    }
-  };
+  function startScreenCommand() {
+    return {
+      type: "render",
+      data: {
+        screen: "bigTextScreen",
+        text: "GENIUS",
+        buttonText: "Start!",
+        buttonAction: "startGame"
+      }
+    };
+  }
 
-  let lostGameScreenCommand = {
-    type: "render",
-    data: {
-      screen: "bigTextScreen",
-      text: "You lost",
-      buttonText: "Start!",
-      buttonAction: "startGame"
-    }
-  };
+  function lostGameScreenCommand() {
+    return {
+      type: "render",
+      data: {
+        screen: "bigTextScreen",
+        text: "You lost",
+        buttonText: "Start!",
+        buttonAction: "startGame"
+      }
+    };
+  }
 
-  let wonGameScreenCommand = {
-    type: "render",
-    data: {
-      screen: "bigTextScreen",
-      text: "You won",
-      buttonText: "Next!",
-      buttonAction: "nextLevel"
-    }
-  };
+  function wonGameScreenCommand() {
+    return {
+      type: "render",
+      data: {
+        screen: "bigTextScreen",
+        text: "You won",
+        buttonText: "Next!",
+        buttonAction: "nextLevel"
+      }
+    };
+  }
 
-  let boardScreenCommand = {
-    type: "render",
-    data: {
-      screen: "bigTextScreen",
-      text: "You lost",
-      buttonText: "Restart!",
-      buttonAction: "startGame"
-    }
-  };
+  function boardScreenCommand() {
+    return {
+      type: "render",
+      data: {
+        screen: "boardScreen",
+        buttonText: "Restart!",
+        buttonAction: "startGame",
+        boardState: state.boardState,
+        level: state.level
+      }
+    };
+  }
+
+  function audioSetupCommand() {
+    return {
+      type: "audioSetup",
+      data: {}
+    };
+  }
 
   let state = {
     iterator: 0,
@@ -64,61 +80,63 @@ export default function createGame() {
   }
 
   function initialize() {
-    notifyAll(startScreenCommand);
+    notifyAll(startScreenCommand());
     state.playing = false;
   }
 
   function getMaxIterations() {
-    return 2 * (level + 2) + 1;
+    return 2 * (state.level + 2) + 1;
   }
 
   function iterate() {
-    if (!playing) {
+    if (!state.playing) {
       return;
     }
 
-    state = iterator % 2 ? Math.round(Math.random() * 10000) % 4 : -1;
+    state.boardState =
+      state.iterator % 2 ? Math.round(Math.random() * 10000) % 4 : -1;
 
-    presentation.drawGameBoard();
-    if (state >= 0) {
-      audio.beep(20, frequencies[state], 100);
-      gameContext.push(state);
+    notifyAll(boardScreenCommand());
+    if (state.boardState >= 0) {
+      // audio.beep(20, frequencies[state.boardState], 100); // TODO
+      state.gameContext.push(state.boardState);
     }
 
-    iterator++;
-    if (iterator < getMaxIterations()) {
+    state.iterator++;
+    if (state.iterator < getMaxIterations()) {
       setTimeout(() => iterate(), 500);
     }
   }
 
   function clearLevel() {
-    iterator = 0;
-    state = -1;
-    gameContext = [];
-    answerIterator = 0;
-    playing = true;
+    state.iterator = 0;
+    state.boardState = -1;
+    state.gameContext = [];
+    state.answerIterator = 0;
+    state.playing = true;
     iterate();
   }
 
   function nextLevel() {
-    level++;
+    state.level++;
     clearLevel();
   }
 
-  function restart() {
+  function startGame() {
     console.log("RESTART!");
-    audio.setup();
-    level = 1;
+    notifyAll(audioSetupCommand());
+
+    state.level = 1;
     clearLevel();
   }
 
-  function buttonClicked(clickedRegion) {
+  function zoneClicked(clickedRegion) {
     if (iterator != getMaxIterations()) {
       return;
     }
 
     state = Number(clickedRegion);
-    presentation.drawGameBoard();
+    // presentation.drawGameBoard();
     audio.beep(20, frequencies[state], 100);
 
     if (gameContext[answerIterator] !== state) {
@@ -144,41 +162,52 @@ export default function createGame() {
     drawRestartButton("Start!", "restart");
   }
 
-  function regionClicked(clickedRegion) {
-    if (clickedRegion === null) {
+  function regionClicked({ region }) {
+    if (region === null) {
       return;
     }
 
-    console.log(`Region ${clickedRegion} was clicked!`);
+    const acceptedRegions = {
+      startGame,
+      startPage,
+      nextLevel,
+      zone0: () => zoneClicked(0),
+      zone1: () => zoneClicked(1),
+      zone2: () => zoneClicked(2),
+      zone3: () => zoneClicked(3)
+    };
 
-    if (clickedRegion === "restart") {
-      restart();
-      return;
-    }
+    const regionFunction = acceptedRegions[region];
 
-    if (clickedRegion === "restart2") {
-      startPage();
-      return;
+    if (regionFunction) {
+      console.log(`Region ${region} was clicked!`);
+      regionFunction();
     }
-    if (clickedRegion === "next") {
-      nextLevel();
-      return;
-    }
-
-    if (Number(clickedRegion) >= 0) buttonClicked(clickedRegion);
   }
 
-  function regionReleased(clickedRegion) {
-    if (answerIterator < gameContext.length) {
-      if (iterator != getMaxIterations()) {
+  function regionReleased({ region }) {
+    if (state.answerIterator < state.gameContext.length) {
+      if (state.iterator != getMaxIterations()) {
         return;
       }
-      state = -1;
-      presentation.drawGameBoard();
+      state.boardState = -1;
+      state.presentation.drawGameBoard();
     }
   }
 
-  function eventHandler(command) {}
+  function eventHandler(command) {
+    const acceptedCommands = {
+      regionClicked,
+      regionReleased
+    };
+
+    const commandFunction = acceptedCommands[command.type];
+
+    if (commandFunction) {
+      console.log(`Game received: ${command.type}`);
+      commandFunction(command.data);
+    }
+  }
 
   return {
     initialize,

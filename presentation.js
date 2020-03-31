@@ -26,9 +26,9 @@ export default function createPresentation(canvas) {
     context.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  function drawGameBoard(state) {
+  function drawGameBoard(boardState, level) {
+    const { centerX, centerY, radius } = state.boardDimensions;
     clearScreen();
-
     context.beginPath();
     context.shadowBlur = 10;
     context.shadowColor = "black";
@@ -37,13 +37,13 @@ export default function createPresentation(canvas) {
 
     for (let step = 0; step < 2; ++step) {
       for (let i = 0; i < 4; i++) {
-        if (state === i && !step) {
+        if (boardState === i && !step) {
           continue;
         }
 
         context.beginPath();
-        context.fillStyle = state === i ? colors_on[i] : colors_off[i];
-        context.shadowBlur = state === i ? 10 : 0;
+        context.fillStyle = boardState === i ? colors_on[i] : colors_off[i];
+        context.shadowBlur = boardState === i ? 10 : 0;
         context.shadowColor = colors_on[i];
 
         context.lineWidth = 5;
@@ -120,7 +120,7 @@ export default function createPresentation(canvas) {
   }
 
   function render(screenData) {
-    if(!screenData){
+    if (!screenData) {
       return;
     }
 
@@ -128,6 +128,9 @@ export default function createPresentation(canvas) {
       bigTextScreen: () => {
         drawBigText(screenData.text);
         drawButton(screenData.buttonText, screenData.buttonAction);
+      },
+      boardScreen: () => {
+        drawGameBoard(screenData.boardState, screenData.level);
       }
     };
 
@@ -151,7 +154,7 @@ export default function createPresentation(canvas) {
     const commandFunction = acceptedCommands[command.type];
 
     if (commandFunction) {
-      console.log(`Presentation: ${command.type}`);
+      console.log(`Presentation received: ${command.type}`);
       commandFunction(command.data);
     }
   }
