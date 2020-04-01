@@ -76,7 +76,18 @@ export default function createEventListener(canvas) {
     false
   );
 
+  canvas.addEventListener(
+    "touchstart",
+    evt =>
+      evt.touches.length
+        ? regionClicked(evt.touches[0].clientX, evt.touches[0].clientY)
+        : null,
+    false
+  );
+
   canvas.addEventListener("mouseup", evt => regionReleased(), false);
+
+  canvas.addEventListener("touchend", evt => regionReleased(), false);
 
   window.onresize = evt => sizeUpdated();
 
